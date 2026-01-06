@@ -1,15 +1,24 @@
-📜 Windows EC2 User Data Script – Dynatrace OneAgent Installation
+🧩 Windows Dynatrace Observability
+Windows EKS Node Bootstrap Script for Dynatrace OneAgent
 
-This PowerShell script automates the installation of Dynatrace OneAgent on Windows-based Kubernetes nodes during instance bootstrap.
-It is designed to be used as EC2 user data or during Windows node initialization to enable observability for Windows pods.
+This repository contains a PowerShell bootstrap script used to install Dynatrace OneAgent on Windows-based Kubernetes nodes during instance initialization.
+It enables log monitoring and observability for Windows pods, addressing the limitation that the Dynatrace Operator natively supports Linux nodes only.
+
+📌 Overview
+
+Dynatrace provides native container observability for Linux nodes via the Operator, but Windows Kubernetes nodes require an OS-level agent installation.
+
+This project demonstrates how I enabled end-to-end observability for Windows workloads by installing Dynatrace OneAgent during Windows node bootstrap, ensuring consistent monitoring across mixed OS Kubernetes clusters.
 
 🎯 Purpose
 
-Install Dynatrace OneAgent on Windows nodes
+Install Dynatrace OneAgent on Windows Kubernetes nodes
 
-Enable log monitoring and observability for Windows Kubernetes pods
+Enable log monitoring for Windows-based pods
 
-Ensure consistent and automated agent installation across environments
+Automate agent installation during node provisioning
+
+Achieve unified observability across Linux and Windows workloads
 
 ⚙️ What the Script Does
 
@@ -19,16 +28,31 @@ Downloads the Dynatrace OneAgent MSI from internal object storage
 
 Installs the agent silently using msiexec
 
-Verifies that the Dynatrace service is successfully installed
+Verifies that the Dynatrace service is successfully installed and running
 
+📜 PowerShell Script
+$installerPath = "C:\Windows\Temp\Dynatrace-OneAgent.msi"
+
+# Download installer from internal storage
+aws s3 cp s3://<bucket>/Dynatrace-OneAgent.msi $installerPath
+
+# Install Dynatrace OneAgent silently
+Start-Process msiexec.exe `
+  -ArgumentList "/i `"$installerPath`" /quiet /norestart" `
+  -Wait
+
+# Verify Dynatrace service
+Get-Service | Where-Object { $_.DisplayName -like "*Dynatrace*" }
 
 ✅ Expected Outcome
 
-Dynatrace OneAgent is installed on the Windows node
+Dynatrace OneAgent installed on the Windows node
 
-Dynatrace service is running
+Dynatrace service running successfully
 
-Windows host and pod logs become visible in Dynatrace
+Windows hosts and Kubernetes pod logs visible in Dynatrace
+
+Improved troubleshooting and observability for Windows workloads
 
 📝 Usage Notes
 
@@ -36,4 +60,34 @@ Requires administrative privileges
 
 AWS CLI must be available on the instance
 
-Intended for automated environments (EC2 user data / launch templates)
+Intended for:
+
+EC2 user data
+
+Launch templates
+
+Automated Windows node provisioning
+
+🚀 Use Cases
+
+EKS clusters with Windows worker nodes
+
+Windows-based microservices (.NET, IIS, background services)
+
+Enterprises requiring unified observability across platforms
+
+🧠 Key Learnings
+
+Windows Kubernetes observability requires OS-level instrumentation
+
+Dynatrace OneAgent integrates effectively with Windows container runtimes
+
+Automating agent installation during bootstrap ensures scalability and consistency
+
+📄 About
+
+This project demonstrates how I enabled log monitoring and observability for Windows-based Kubernetes pods using Dynatrace OneAgent, overcoming the limitation of Linux-only Dynatrace Operator support. By installing OneAgent at the OS level during Windows node bootstrap, I achieved end-to-end visibility for Windows workloads running in Kubernetes.
+
+🏷 Tags
+
+kubernetes · windows-containers · dynatrace · observability · devops · sre · eks

@@ -1,0 +1,12 @@
+$installerPath = "C:\Windows\Temp\Dynatrace-OneAgent.msi"
+
+# Download installer from internal storage
+aws s3 cp s3://<bucket>/Dynatrace-OneAgent.msi $installerPath
+
+# Install Dynatrace OneAgent silently
+Start-Process msiexec.exe `
+  -ArgumentList "/i `"$installerPath`" /quiet /norestart" `
+  -Wait
+
+# Verify service
+Get-Service | Where-Object { $_.DisplayName -like "*Dynatrace*" }
